@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Book, type InsertBook, type Order, type InsertOrder } from "@shared/schema";
+import { type User, type InsertUser, type Book, type InsertBook, type Order, type InsertOrder, type Review, type InsertReview } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -11,6 +11,7 @@ export interface IStorage {
   getAllBooks(): Promise<Book[]>;
   getBook(id: string): Promise<Book | undefined>;
   getBooksBySeller(sellerId: string): Promise<Book[]>;
+  getSoldBooks(): Promise<Book[]>;
   createBook(book: InsertBook): Promise<Book>;
   updateBook(id: string, updates: Partial<Book>): Promise<Book | undefined>;
   deleteBook(id: string): Promise<boolean>;
@@ -20,19 +21,29 @@ export interface IStorage {
   getOrder(id: string): Promise<Order | undefined>;
   getOrdersByBuyer(buyerId: string): Promise<Order[]>;
   getOrdersBySeller(sellerId: string): Promise<Order[]>;
+  getCompletedOrders(): Promise<Order[]>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: string, updates: Partial<Order>): Promise<Order | undefined>;
+
+  // Review operations
+  getAllReviews(): Promise<Review[]>;
+  getReviewsBySeller(sellerId: string): Promise<Review[]>;
+  getReviewByOrder(orderId: string): Promise<Review | undefined>;
+  createReview(review: InsertReview): Promise<Review>;
+  getSellerRating(sellerId: string): Promise<{ average: number; count: number }>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private books: Map<string, Book>;
   private orders: Map<string, Order>;
+  private reviews: Map<string, Review>;
 
   constructor() {
     this.users = new Map();
     this.books = new Map();
     this.orders = new Map();
+    this.reviews = new Map();
     
     // Add some sample data for demonstration
     this.initSampleData();
@@ -128,6 +139,93 @@ export class MemStorage implements IStorage {
       sellerId: user1.id,
       status: "available",
     });
+
+    // Create sample sold books
+    const soldBook1 = await this.createBook({
+      title: "線性代數",
+      author: "Gilbert Strang",
+      subject: "理工科學",
+      price: 400,
+      condition: "八成新",
+      description: "MIT 經典教材，已售出。",
+      imageUrl: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=300&h=400&fit=crop",
+      sellerId: user1.id,
+      status: "sold",
+    });
+
+    const soldBook2 = await this.createBook({
+      title: "會計學原理",
+      author: "Warren",
+      subject: "商業管理",
+      price: 320,
+      condition: "九成新",
+      description: "商學院必修，已售出。",
+      imageUrl: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=300&h=400&fit=crop",
+      sellerId: user2.id,
+      status: "sold",
+    });
+
+    const soldBook3 = await this.createBook({
+      title: "有機化學",
+      author: "Clayden",
+      subject: "理工科學",
+      price: 550,
+      condition: "七成新",
+      description: "化學系經典教材，已售出。",
+      imageUrl: "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=300&h=400&fit=crop",
+      sellerId: user1.id,
+      status: "sold",
+    });
+
+    // Create completed orders
+    const order1 = await this.createOrder({
+      bookId: soldBook1.id,
+      buyerId: user2.id,
+      sellerId: user1.id,
+      status: "completed",
+      message: "書況很好，謝謝！",
+    });
+
+    const order2 = await this.createOrder({
+      bookId: soldBook2.id,
+      buyerId: user1.id,
+      sellerId: user2.id,
+      status: "completed",
+      message: "很棒的交易體驗",
+    });
+
+    const order3 = await this.createOrder({
+      bookId: soldBook3.id,
+      buyerId: user2.id,
+      sellerId: user1.id,
+      status: "completed",
+      message: "快速出貨",
+    });
+
+    // Create sample reviews
+    await this.createReview({
+      sellerId: user1.id,
+      buyerId: user2.id,
+      orderId: order1.id,
+      rating: 5,
+      comment: "賣家很親切，書況跟描述一樣好，推薦！",
+    });
+
+    await this.createReview({
+      sellerId: user2.id,
+      buyerId: user1.id,
+      orderId: order2.id,
+      rating: 4,
+      comment: "書的狀況不錯，出貨速度快。",
+    });
+
+    await this.createReview({
+      sellerId: user1.id,
+      buyerId: user2.id,
+      orderId: order3.id,
+      rating: 5,
+      comment: "非常好的賣家，強烈推薦！",
+    });
   }
 
   // User operations
@@ -164,6 +262,16 @@ export class MemStorage implements IStorage {
   async getBooksBySeller(sellerId: string): Promise<Book[]> {
     return Array.from(this.books.values())
       .filter((book) => book.sellerId === sellerId)
+      .sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+  }
+
+  async getSoldBooks(): Promise<Book[]> {
+    return Array.from(this.books.values())
+      .filter((book) => book.status === "sold")
       .sort((a, b) => {
         const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
@@ -246,6 +354,64 @@ export class MemStorage implements IStorage {
     const updatedOrder = { ...order, ...updates, id };
     this.orders.set(id, updatedOrder);
     return updatedOrder;
+  }
+
+  async getCompletedOrders(): Promise<Order[]> {
+    return Array.from(this.orders.values())
+      .filter((order) => order.status === "completed")
+      .sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+  }
+
+  // Review operations
+  async getAllReviews(): Promise<Review[]> {
+    return Array.from(this.reviews.values()).sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+  }
+
+  async getReviewsBySeller(sellerId: string): Promise<Review[]> {
+    return Array.from(this.reviews.values())
+      .filter((review) => review.sellerId === sellerId)
+      .sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+  }
+
+  async getReviewByOrder(orderId: string): Promise<Review | undefined> {
+    return Array.from(this.reviews.values()).find(
+      (review) => review.orderId === orderId,
+    );
+  }
+
+  async createReview(insertReview: InsertReview): Promise<Review> {
+    const id = randomUUID();
+    const review: Review = {
+      ...insertReview,
+      id,
+      createdAt: new Date(),
+    };
+    this.reviews.set(id, review);
+    return review;
+  }
+
+  async getSellerRating(sellerId: string): Promise<{ average: number; count: number }> {
+    const reviews = await this.getReviewsBySeller(sellerId);
+    if (reviews.length === 0) {
+      return { average: 0, count: 0 };
+    }
+    const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+    return {
+      average: Math.round((sum / reviews.length) * 10) / 10,
+      count: reviews.length,
+    };
   }
 }
 

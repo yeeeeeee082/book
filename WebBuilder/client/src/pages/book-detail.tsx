@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { ArrowLeft, BookOpen, Mail, Phone, School, MessageCircle, User, Sparkles } from "lucide-react";
+import { ArrowLeft, BookOpen, Mail, Phone, School, MessageCircle, User, Sparkles, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +21,24 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/auth-context";
 import { apiRequest } from "@/lib/queryClient";
 import { AIChatAssistant } from "@/components/ai-chat-assistant";
+import { addToHistory } from "@/pages/history";
 import type { Book, User as UserType } from "@shared/schema";
+
+interface ReviewWithBuyer {
+  id: string;
+  sellerId: string;
+  buyerId: string;
+  orderId: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+  buyer: { id: string; username: string } | null;
+}
+
+interface SellerReviewData {
+  reviews: ReviewWithBuyer[];
+  rating: { average: number; count: number };
+}
 
 interface BookWithSeller extends Book {
   seller?: UserType | null;
@@ -51,6 +68,17 @@ export default function BookDetail() {
   const { data: allBooks } = useQuery<BookWithSeller[]>({
     queryKey: ["/api/books"],
   });
+
+  const { data: sellerReviews } = useQuery<SellerReviewData>({
+    queryKey: ["/api/reviews/seller", book?.sellerId],
+    enabled: !!book?.sellerId,
+  });
+
+  useEffect(() => {
+    if (bookId) {
+      addToHistory(bookId);
+    }
+  }, [bookId]);
 
   const recommendedBooks = allBooks
     ?.filter(b => b.status === "available" && b.id !== bookId)
@@ -218,6 +246,53 @@ export default function BookDetail() {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Phone className="w-4 h-4" />
                     <span data-testid="text-seller-phone">{book.seller.phone}</span>
+                  </div>
+                )}
+
+                {sellerReviews && sellerReviews.rating.count > 0 && (
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`w-4 h-4 ${
+                              star <= Math.round(sellerReviews.rating.average)
+                                ? "text-yellow-500 fill-yellow-500"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="font-semibold">{sellerReviews.rating.average}</span>
+                      <span className="text-sm text-muted-foreground">
+                        ({sellerReviews.rating.count} 則評價)
+                      </span>
+                    </div>
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {sellerReviews.reviews.slice(0, 3).map((review) => (
+                        <div key={review.id} className="text-sm p-2 bg-muted/50 rounded">
+                          <div className="flex items-center gap-1 mb-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`w-3 h-3 ${
+                                  star <= review.rating
+                                    ? "text-yellow-500 fill-yellow-500"
+                                    : "text-gray-300"
+                                }`}
+                              />
+                            ))}
+                            <span className="text-xs text-muted-foreground ml-2">
+                              {review.buyer?.username}
+                            </span>
+                          </div>
+                          {review.comment && (
+                            <p className="text-muted-foreground">{review.comment}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </CardContent>

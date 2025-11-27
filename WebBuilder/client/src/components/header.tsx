@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { BookOpen, ShoppingCart, Store, User, LogOut, Menu } from "lucide-react";
+import { BookOpen, ShoppingCart, Store, User, LogOut, Menu, Leaf, History } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/context/auth-context";
@@ -26,6 +26,8 @@ export function Header() {
   const navItems = [
     { href: "/buyer", label: "買家入口", icon: ShoppingCart },
     { href: "/seller", label: "賣家入口", icon: Store },
+    { href: "/transactions", label: "成交區", icon: Leaf },
+    { href: "/history", label: "瀏覽紀錄", icon: History },
   ];
 
   const isActive = (path: string) => location === path;

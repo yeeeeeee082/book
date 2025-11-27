@@ -47,6 +47,20 @@ export const insertOrderSchema = createInsertSchema(orders).omit({ id: true, cre
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type Order = typeof orders.$inferSelect;
 
+export const reviews = pgTable("reviews", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  sellerId: varchar("seller_id", { length: 36 }).notNull(),
+  buyerId: varchar("buyer_id", { length: 36 }).notNull(),
+  orderId: varchar("order_id", { length: 36 }).notNull(),
+  rating: integer("rating").notNull(),
+  comment: text("comment"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertReviewSchema = createInsertSchema(reviews).omit({ id: true, createdAt: true });
+export type InsertReview = z.infer<typeof insertReviewSchema>;
+export type Review = typeof reviews.$inferSelect;
+
 export const bookConditions = ["全新", "九成新", "八成新", "七成新", "六成新以下"] as const;
 export type BookCondition = typeof bookConditions[number];
 

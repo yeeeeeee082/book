@@ -11,6 +11,8 @@ import Auth from "@/pages/auth";
 import Buyer from "@/pages/buyer";
 import Seller from "@/pages/seller";
 import BookDetail from "@/pages/book-detail";
+import Transactions from "@/pages/transactions";
+import BrowsingHistory from "@/pages/history";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,6 +23,8 @@ function Router() {
       <Route path="/buyer" component={Buyer} />
       <Route path="/seller" component={Seller} />
       <Route path="/book/:id" component={BookDetail} />
+      <Route path="/transactions" component={Transactions} />
+      <Route path="/history" component={BrowsingHistory} />
       <Route component={NotFound} />
     </Switch>
   );
