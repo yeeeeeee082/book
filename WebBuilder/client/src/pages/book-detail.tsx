@@ -138,8 +138,16 @@ export default function BookDetail() {
         </Link>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="aspect-square bg-muted rounded-lg flex items-center justify-center">
-            <BookOpen className="w-24 h-24 text-muted-foreground/50" />
+          <div className="aspect-square bg-muted rounded-lg flex items-center justify-center overflow-hidden">
+            {book.imageUrl ? (
+              <img 
+                src={book.imageUrl} 
+                alt={book.title}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <BookOpen className="w-24 h-24 text-muted-foreground/50" />
+            )}
           </div>
 
           <div className="space-y-6">

@@ -119,12 +119,12 @@ export class MemStorage implements IStorage {
 
     await this.createBook({
       title: "法學緒論",
-      author: "王澤鑑",
+      author: "鄭玉波",
       subject: "法律政治",
       price: 350,
       condition: "九成新",
-      description: "法律系必備教材，僅使用一學期。",
-      imageUrl: "/law-textbook.webp",
+      description: "法律系必備教材，修訂二十五版，僅使用一學期。由黃宗樂、楊宏暉修訂。",
+      imageUrl: "/attached_assets/法學緒論_1764251301024.webp",
       sellerId: user1.id,
       status: "available",
     });
