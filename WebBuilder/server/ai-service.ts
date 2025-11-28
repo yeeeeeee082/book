@@ -1,9 +1,15 @@
-// Real OpenAI integration for book marketplace assistant
+// Real OpenAI and Google Gemini integration for book marketplace assistant
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+// the newest Gemini model is "gemini-2.5-flash"
 import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
+});
+
+const gemini = new GoogleGenAI({
+  apiKey: process.env.GOOGLE_GEMINI_API_KEY,
 });
 
 // Fallback local responses for when API is unavailable
@@ -69,8 +75,7 @@ export async function generateAIChatResponse(
   },
   userMessage: string
 ): Promise<string> {
-  try {
-    const systemPrompt = `你是一個友善的大學二手書交易平台購書助手。根據書籍和賣家資訊，用繁體中文提供實用建議。
+  const systemPrompt = `你是一個友善的大學二手書交易平台購書助手。根據書籍和賣家資訊，用繁體中文提供實用建議。
     
 書籍資訊：
 - 書名：${bookInfo.title}
@@ -84,39 +89,66 @@ export async function generateAIChatResponse(
 
 請根據使用者的提問，提供關於購書的專業建議。回應應該簡潔、實用且鼓勵交易。`;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-5",
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt,
-        },
-        {
-          role: "user",
-          content: userMessage,
-        },
-      ],
-      max_completion_tokens: 500,
-    });
+  // Try Gemini first (more reliable for this user)
+  if (process.env.GOOGLE_GEMINI_API_KEY) {
+    try {
+      console.log("Trying Google Gemini API...");
+      const response = await gemini.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                text: `${systemPrompt}\n\n使用者提問: ${userMessage}`,
+              },
+            ],
+          },
+        ],
+      });
 
-    const content = response.choices[0].message.content;
-    if (!content) {
-      throw new Error("No content in response");
+      const content = response.text;
+      if (content) {
+        console.log("Successfully used Gemini API");
+        return content;
+      }
+    } catch (error: any) {
+      console.error("Gemini API Error:", error);
     }
-
-    return content;
-  } catch (error: any) {
-    console.error("AI Service Error:", error);
-    
-    // Use local fallback for API errors
-    if (error.code === "insufficient_quota" || error.code === "rate_limit_exceeded" || error.status === 429) {
-      console.log("Using local fallback AI due to API quota limit");
-      return generateLocalResponse(userMessage, bookInfo.title);
-    }
-    
-    // Try local fallback for other errors too
-    return generateLocalResponse(userMessage, bookInfo.title);
   }
+
+  // Fallback to OpenAI if Gemini fails
+  if (process.env.OPENAI_API_KEY) {
+    try {
+      console.log("Trying OpenAI API...");
+      const response = await openai.chat.completions.create({
+        model: "gpt-5",
+        messages: [
+          {
+            role: "system",
+            content: systemPrompt,
+          },
+          {
+            role: "user",
+            content: userMessage,
+          },
+        ],
+        max_completion_tokens: 500,
+      });
+
+      const content = response.choices[0].message.content;
+      if (content) {
+        console.log("Successfully used OpenAI API");
+        return content;
+      }
+    } catch (error: any) {
+      console.error("OpenAI API Error:", error);
+    }
+  }
+
+  // Final fallback to local rule-based AI
+  console.log("Using local fallback AI");
+  return generateLocalResponse(userMessage, bookInfo.title);
 }
 
 export async function generateSuggestionForBookSearch(
