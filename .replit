@@ -5,6 +5,7 @@ packages = ["unzip"]
 
 [agent]
 expertMode = true
+integrations = ["javascript_openai:1.0.0"]
 
 [workflows]
 runButton = "Project"
@@ -33,7 +34,3 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 46879
-externalPort = 3000
