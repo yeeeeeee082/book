@@ -4,6 +4,7 @@
 A university second-hand book trading platform built with React, Express, TypeScript, and in-memory storage. The platform enables students to buy and sell used textbooks with features including carbon footprint tracking, browsing history, and seller ratings.
 
 ## Recent Changes
+- 2025-11-28: Integrated real OpenAI API (GPT-5) for AI book purchasing assistant
 - 2025-11-27: Implemented seller reviews display on book detail pages
 - 2025-11-27: Created browsing history feature using localStorage
 - 2025-11-27: Added transactions page with carbon footprint statistics

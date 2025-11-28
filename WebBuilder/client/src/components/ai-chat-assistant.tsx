@@ -74,7 +74,7 @@ export function AIChatAssistant({ book, seller }: AIChatAssistantProps) {
       <div className="space-y-3 mb-4 max-h-[300px] overflow-y-auto">
         {messages.length === 0 && (
           <p className="text-xs text-muted-foreground italic">
-            向本地 AI 提問關於這本書的任何事情...
+            向 AI 助手提問關於這本書的任何事情...
           </p>
         )}
         {messages.map((msg, idx) => (
@@ -96,7 +96,7 @@ export function AIChatAssistant({ book, seller }: AIChatAssistantProps) {
         {mutation.isPending && (
           <div className="flex gap-2 text-muted-foreground">
             <Loader2 className="w-4 h-4 animate-spin" />
-            <span className="text-xs">本地 AI 處理中...</span>
+            <span className="text-xs">AI 處理中...</span>
           </div>
         )}
       </div>
