@@ -1,7 +1,13 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
-import { insertUserSchema, insertBookSchema, insertOrderSchema, insertReviewSchema } from "@shared/schema";
+import { storage } from "./storage.js";
+import {
+  insertUserSchema,
+  insertBookSchema,
+  insertOrderSchema,
+  insertReviewSchema
+} from "../shared/schema.js";
+
 import { generateAIChatResponse } from "./ai-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "node --loader ts-node/esm WebBuilder/server/index-prod.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,6 +12,10 @@
   "description": "",
   "dependencies": {
     "@google/genai": "^1.30.0",
-    "openai": "^6.9.1"
+    "esbuild-register": "^3.6.0",
+    "express": "^5.1.0",
+    "openai": "^6.9.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }

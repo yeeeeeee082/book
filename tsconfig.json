@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "es2019",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["WebBuilder/shared/*"]
+    }
+  },
+  "include": [
+    "WebBuilder/server/**/*.ts",
+    "WebBuilder/shared/**/*.ts",
+    "WebBuilder/vite.config.ts"
+  ]
+}

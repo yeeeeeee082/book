@@ -8,7 +8,7 @@ import express, {
   NextFunction,
 } from "express";
 
-import { registerRoutes } from "./routes";
+import { registerRoutes } from "./routes.js";
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
@@ -77,8 +77,9 @@ export default async function runApp(
     const message = err.message || "Internal Server Error";
 
     res.status(status).json({ message });
-    throw err;
+    return;
   });
+
 
   // importantly run the final setup after setting up all the other routes so
   // the catch-all route doesn't interfere with the other routes
