@@ -1,6 +1,6 @@
 import { createServer } from "http";
 import { storage } from "./storage.js";
-import { insertUserSchema, insertBookSchema, insertOrderSchema, insertReviewSchema } from "@shared/schema";
+import { insertUserSchema, insertBookSchema, insertOrderSchema, insertReviewSchema } from "../shared/schema.js";
 import { generateAIChatResponse } from "./ai-service";
 export async function registerRoutes(app) {
     // Auth routes
