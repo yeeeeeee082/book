@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import express from "express";
-import runApp from "./app";
+import runApp from "./app.js";
 export async function serveStatic(app, _server) {
     const distPath = path.resolve(import.meta.dirname, "public");
     if (!fs.existsSync(distPath)) {
@@ -16,3 +16,4 @@ export async function serveStatic(app, _server) {
 (async () => {
     await runApp(serveStatic);
 })();
+
