@@ -1,6 +1,6 @@
 import path from "node:path";
 import express from "express";
-import { registerRoutes } from "./routes";
+import { registerRoutes } from "./routes.js";
 export function log(message, source = "express") {
     const formattedTime = new Date().toLocaleTimeString("en-US", {
         hour: "numeric",
