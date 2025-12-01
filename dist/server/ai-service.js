@@ -2,9 +2,6 @@
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
 // the newest Gemini model is "gemini-2.5-flash"
 import { GoogleGenAI } from "@google/genai";
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
 const gemini = new GoogleGenAI({
     apiKey: process.env.GOOGLE_GEMINI_API_KEY,
 });
