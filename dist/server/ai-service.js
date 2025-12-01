@@ -1,7 +1,6 @@
 // Real OpenAI and Google Gemini integration for book marketplace assistant
 // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
 // the newest Gemini model is "gemini-2.5-flash"
-import OpenAI from "openai";
 import { GoogleGenAI } from "@google/genai";
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -92,35 +91,7 @@ export async function generateAIChatResponse(bookInfo, sellerInfo, userMessage) 
             console.error("Gemini API Error:", error);
         }
     }
-    // Fallback to OpenAI if Gemini fails
-    if (process.env.OPENAI_API_KEY) {
-        try {
-            console.log("Trying OpenAI API...");
-            const response = await openai.chat.completions.create({
-                model: "gpt-5",
-                messages: [
-                    {
-                        role: "system",
-                        content: systemPrompt,
-                    },
-                    {
-                        role: "user",
-                        content: userMessage,
-                    },
-                ],
-                max_completion_tokens: 500,
-            });
-            const content = response.choices[0].message.content;
-            if (content) {
-                console.log("Successfully used OpenAI API");
-                return content;
-            }
-        }
-        catch (error) {
-            console.error("OpenAI API Error:", error);
-        }
-    }
-    // Final fallback to local rule-based AI
+
     console.log("Using local fallback AI");
     return generateLocalResponse(userMessage, bookInfo.title);
 }
